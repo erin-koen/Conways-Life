@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import Row from './Row.js';
 import './grid.css';
+import Rules from './Rules.js';
 
 class Grid extends Component {
 	state = {
@@ -40,9 +41,7 @@ class Grid extends Component {
 			alive: 0,
 			dead: 0
 		};
-		console.log('x: ', x);
-		console.log('y: ', y);
-		console.log(arr[x][y]);
+
 		// y = row, x = column
 		// check each direction and increment count if necessary n(1)
 
@@ -69,7 +68,6 @@ class Grid extends Component {
 			if (arr[x - 1][y]) {
 				count.alive++;
 			}
-		
 		}
 		// Northwest
 		if (x >= 1 && y < this.state.size - 1) {
@@ -113,45 +111,33 @@ class Grid extends Component {
 				const { alive } = this.findNeighbors(i, j, this.state.grid);
 				// if this cell is alive check the Conway conditions
 				if (this.state.grid[i][j]) {
-					console.log('first conditional - live cell');
-					console.log('live neighbors: ', alive);
 					// live cell with fewer than two live neighbors, kill it
 					if (alive < 2) {
-						console.log('second conditional - kill it');
-
 						newGrid[i][j] = false;
 						continue;
 					}
 					// live cell with greater than three live neighbors, kill it
 					if (alive > 3) {
-						console.log('third conditional - kill it');
-
 						newGrid[i][j] = false;
 						continue;
 					}
 					// live cell with 2 or three live neighbors, it lives on
 					else {
-						console.log('4th conditional - it lives on');
-
 						newGrid[i][j] = true;
 						continue;
 					}
 				}
 				// else the cell is dead, check the Conway conditions
 				else {
-					console.log('5th conditional - dead cell');
-					console.log('live neighbors: ', alive);
 					// dead cell with 3 live neighbors, lazarous
 					if (alive >= 3) {
-						console.log('6th conditional - it rises');
 						newGrid[i][j] = true;
 						continue;
 					}
 				}
 			}
 		}
-		console.log('grid in state: ', this.state.grid);
-		console.log('new grid: ', newGrid);
+
 		// update state with the new grid, increment the generation
 		this.setState({
 			grid: newGrid,
@@ -161,11 +147,8 @@ class Grid extends Component {
 
 	// called by submitting the form, which sets the size of the grid in state
 	createGrid = () => {
-		// e.preventDefault();
-	
-	
+		// create a new empty grid
 		const newGrid = this.gridHelper(parseInt(this.state.size));
-		console.log('new grid: ', newGrid)
 		// set it to state
 		this.setState({
 			grid: newGrid,
@@ -177,9 +160,6 @@ class Grid extends Component {
 		//  y = row, x = column
 		// create a copy of the grid in state
 		const newGrid = this.state.grid;
-		// check you're changing the right value
-		console.log('row = ', y, 'column = ', x);
-		console.log('target value: ', newGrid[y][x]);
 		// toggle value in copy of grid
 		newGrid[y][x] = !newGrid[y][x];
 		// setState w/ updated grid
@@ -208,6 +188,7 @@ class Grid extends Component {
 		e.preventDefault();
 		this.updateGrid();
 	};
+
 	// toggleCellAsync(x,y) {
 	// 	return new Promise ((resolve)=> {
 	// 		this.toggleCell((x,y), resolve)
@@ -223,7 +204,7 @@ class Grid extends Component {
 
 	resetGrid = e => {
 		e.preventDefault();
-		console.log('here');
+
 		const newGrid = this.gridHelper(this.state.size);
 		this.setState({
 			grid: newGrid,
@@ -235,55 +216,73 @@ class Grid extends Component {
 		// Conditional to allow users to choose their own grid size - will implement this eventually by eliminating the function calls in CDM above
 		if (this.state.generation === 0) {
 			return (
-				<form onSubmit={this.createGrid}>
-					<input
-						type="number"
-						min="10"
-						max="50"
-						value={this.state.size}
-						name="size"
-						placeholder="how big would you like your square?"
-						onChange={this.changeHandler}
-					/>
-					<button type="submit">SUBMIT</button>
-				</form>
+				<div className="app-container-setup">
+					<Rules generation={this.state.generation}/>
+					<div className="setup-container">
+						<div>
+							<h3>Choose a grid size (it's a square)</h3>
+							<h4>
+								Please keep it between 10 and 50 (inclusive)
+								while I optimize.
+							</h4>
+						</div>
+						<form onSubmit={this.createGrid}>
+							<input
+								type="number"
+								min="10"
+								max="50"
+								value={this.state.size}
+								name="size"
+								placeholder="how big would you like your square?"
+								onChange={this.changeHandler}
+							/>
+							<button type="submit">SUBMIT</button>
+						</form>
+					</div>
+					
+				</div>
 			);
 		} else {
 			return (
-				<div className="main-container">
-					<div className="grid-container">
-						{this.state.grid.map((row, idx) => (
-							<Row
-								className="row"
-								key={idx}
-								// pass in the row values
-								cells={row}
-								// pass down the row coordinate
-								yCoord={idx}
-								// whether the game is running
-								running={this.state.running}
-								// drill down the toggle method
-								toggle={this.toggleCell}
-								size={this.state.size}
-							/>
-						))}
-					</div>
-					<div className="control-container">
-						<button onClick={this.takeStep}>Take One Step</button>
-						<button onClick={this.startGame}>START IT</button>
-						<button onClick={this.endGame}>END IT</button>
-						<button onClick={this.resetGrid}>RESET IT</button>
-						<p>Generation: {this.state.generation}</p>
-					</div>
-					{/* <form onSubmit={this.randomSelection(this.state.random)}>
+				<div className="app-container-playing">
+					<div className="main-container">
+						<div className="grid-container">
+							{this.state.grid.map((row, idx) => (
+								<Row
+									className="row"
+									key={idx}
+									// pass in the row values
+									cells={row}
+									// pass down the row coordinate
+									yCoord={idx}
+									// whether the game is running
+									running={this.state.running}
+									// drill down the toggle method
+									toggle={this.toggleCell}
+									size={this.state.size}
+								/>
+							))}
+						</div>
+						<div className="control-container">
+							<button onClick={this.takeStep}>
+								Take One Step
+							</button>
+							<button onClick={this.startGame}>START IT</button>
+							<button onClick={this.endGame}>END IT</button>
+							<button onClick={this.resetGrid}>RESET IT</button>
+							<p>Generation: {this.state.generation}</p>
+						</div>
+						{/* <form onSubmit={this.randomSelection(this.state.random)}>
 						<input
-							type="number"
-							value={this.state.random}
-							name="random"
-							placeholder="Pick a number of random squares"
-							onChange={this.changeHandler}
+						type="number"
+						value={this.state.random}
+						name="random"
+						placeholder="Pick a number of random squares"
+						onChange={this.changeHandler}
 						/>
 					</form> */}
+					</div>
+					<Rules/>
 				</div>
 			);
 		}
